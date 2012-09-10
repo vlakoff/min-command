@@ -1,0 +1,4 @@
+== TODO ==
+
+* force same .js/.css extension for output file
+* make 2nd argument optional (automatic ".min" insertion)
