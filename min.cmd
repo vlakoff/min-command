@@ -28,6 +28,7 @@
 @ECHO(
 :promptOverwrite
 @SETLOCAL
+:: attention a ne pas trimer l'espace a la fin de la ligne suivante
 @SET /P confirmOverwrite=Overwrite? (Y/N) 
 @IF /I [%confirmOverwrite%]==[Y] (
 	ENDLOCAL
