@@ -1,7 +1,7 @@
-@IF [%1]==[] GOTO manual
-@IF [%2]==[] GOTO secondArgumentMissing
-@IF NOT [%3]==[] GOTO thirdArgumentPresent
+@SETLOCAL
 
+@IF [%1]==[] GOTO manual
+@IF NOT [%3]==[] GOTO thirdArgumentPresent
 @IF NOT EXIST %1 GOTO inputNotFound
 
 @IF /I NOT [%~x1]==[.js] (
@@ -10,105 +10,94 @@
 	)
 )
 
-@IF /I "%~f1"=="%~f2" GOTO sameInputOutput
+@SET inputFullpath="%~f1"
+
+@IF [%2]==[] (
+	SET outputFullpath="%~dpn1.min%~x1"
+	SET outputFilename=%~n1.min%~x1
+) ELSE (
+	IF /I "%~f1"=="%~f2" GOTO sameInputOutput
+	IF /I NOT [%~x1]==[%~x2] GOTO typesMismatch
+	SET outputFullpath="%~f2"
+	SET outputFilename=%~nx2
+)
+
+@SET inputFilenameNoExt=%~n1
+@IF %inputFilenameNoExt:~-4%==.min (
+	GOTO inputAlreadyMinified
+)
 
 
-@SETLOCAL
-@SET inputFilename=%~n1
-@IF %inputFilename:~-4%==.min GOTO inputAlreadyMinified
-@ENDLOCAL
-
-
-@IF NOT EXIST %2 (
+@IF NOT EXIST %outputFullpath% (
 	GOTO noPromptOverwrite
 )
 
 @ECHO(
-@ECHO Output file already exists: %2
+@ECHO   Output file already exists: %outputFilename%
 @ECHO(
 :promptOverwrite
-@SETLOCAL
 :: attention a ne pas trimer l'espace a la fin de la ligne suivante
-@SET /P confirmOverwrite=Overwrite? (Y/N) 
+@SET /P confirmOverwrite=  Overwrite? (Y/N) 
 @IF /I [%confirmOverwrite%]==[Y] (
-	ENDLOCAL
 	GOTO noPromptOverwrite
 )
 @IF /I [%confirmOverwrite%]==[N] (
-	ENDLOCAL
-	ECHO(
 	GOTO :EOF
 )
-@ENDLOCAL
 @GOTO promptOverwrite
 
 :noPromptOverwrite
 
 
-@SETLOCAL
-
-@SET inputFile="%~f1"
-@SET outputFile="%~f2"
-
 @PUSHD %APPDATA%\npm
 
 @IF /I %~x1==.js (
-	CALL uglifyjs -nc %inputFile% > %outputFile%
+	CALL uglifyjs -nc %inputFullpath% > %outputFullpath%
 ) ELSE (
-	CALL recess --compress %inputFile% > %outputFile%
+	CALL recess --compress %inputFullpath% > %outputFullpath%
 )
 
 @POPD
 
-@ENDLOCAL
-
-
-@ECHO(
-@ECHO DONE
-@ECHO(
-@GOTO :EOF
+@GOTO weAreDone
 
 
 :manual
-@ECHO(
-@ECHO Syntax:
-@ECHO(
-@ECHO min inputfile outputfile
-@ECHO(
-@GOTO :EOF
-
-:secondArgumentMissing
-@ECHO(
-@ECHO ERROR - Second argument is missing
-@ECHO(
+@CALL :message Syntax:
+@CALL :message min inputfile [outputfile]
+@CALL :message if outputfile is omitted, will be inputfile with ".min" inserted
 @GOTO :EOF
 
 :thirdArgumentPresent
-@ECHO(
-@ECHO ERROR - Presence of a third argument
-@ECHO(
+@CALL :message ERROR - Presence of a third argument
 @GOTO :EOF
 
 :inputNotFound
-@ECHO(
-@ECHO ERROR - Input file not found: %1
-@ECHO(
+@CALL :message ERROR - Input file not found: %1
 @GOTO :EOF
 
 :unsupportedFileType
-@ECHO(
-@ECHO ERROR - Input file has to be JS or CSS
-@ECHO(
+@CALL :message ERROR - Input file has to be JS or CSS
 @GOTO :EOF
 
 :sameInputOutput
-@ECHO(
-@ECHO ERROR - Output file cannot be the same as input file
-@ECHO(
+@CALL :message ERROR - Input and output files are the same
+@GOTO :EOF
+
+:typesMismatch
+@CALL :message ERROR - File extensions mismatch
 @GOTO :EOF
 
 :inputAlreadyMinified
+@CALL :message ERROR - Input file is already a minified file
+@GOTO :EOF
+
+:weAreDone
+@CALL :message DONE
+@GOTO :EOF
+
+:: subroutine
+:message
 @ECHO(
-@ECHO ERROR - Input file is already a minified file
-@ECHO(
+@ECHO   %*
 @GOTO :EOF
