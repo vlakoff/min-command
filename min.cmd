@@ -52,7 +52,7 @@
 @PUSHD %APPDATA%\npm
 
 @IF /I %~x1==.js (
-	CALL uglifyjs -cm %inputFullpath% > %outputFullpath%
+	CALL uglifyjs %inputFullpath% -cm > %outputFullpath%
 ) ELSE (
 	CALL recess --compress %inputFullpath% > %outputFullpath%
 )
