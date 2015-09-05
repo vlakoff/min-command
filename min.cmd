@@ -1,3 +1,7 @@
+
+:: ATTENTION : Recess n'est plus maintenu
+:: il faut mettre en place un autre compacteur CSS
+
 @SETLOCAL
 
 @IF [%1]==[] GOTO manual
