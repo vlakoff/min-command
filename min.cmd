@@ -40,8 +40,7 @@
 @ECHO   Output file already exists: %outputFilename%
 @ECHO(
 :promptOverwrite
-:: attention a ne pas trimer l'espace a la fin de la ligne suivante
-@SET /P confirmOverwrite=  Overwrite? (Y/N) 
+@SET /P "confirmOverwrite=  Overwrite? (Y/N) "
 @IF /I [%confirmOverwrite%]==[Y] (
 	GOTO noPromptOverwrite
 )
